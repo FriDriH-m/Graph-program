@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Numerics;
+using System.Reflection;
+using System.Collections;
 
 namespace MyApp
 {
@@ -13,33 +15,54 @@ namespace MyApp
             this.id = id;
             neighbours = new List<Vertex>();
         }
+        public List<Vertex> GetNeighboursList() => neighbours;
         public void AddNeighbour(Vertex id) => neighbours.Add(id);
         public void RemoveNeighbour(Vertex id) => neighbours.Remove(id);
-        public Vertex NeighborAt(Vertex i)
+        public Vertex NeighborAt(int index)
         {
-            foreach(Vertex vertex in neighbours)
-            {
-                if (vertex.id == i.id) return vertex;
-            }
-            return null;
+            if (index < 0 || index >= neighbours.Count) return null;
+            return neighbours[index];
         }
-
-        public bool HasNeighbor(int id) => neighbours.Contains(id);
+        public bool HasNeighbor(int id) => neighbours.Any(n => n.id == id);
         public void SeeNeighbors()
         {
             Console.Write($"Vertex {id} neighbors: ");
             foreach (var neighbor in neighbours)
             {
-                Console.Write($"{neighbor} ");
+                Console.Write($"{neighbor.id} ");
             }
             Console.WriteLine();
         }
     }
+
     class Graph
     {
         private int countOfVertices;
         private Dictionary<int, Vertex> vertices;
         private List<List<int>> adjacencyMatrix;
+
+        public IEnumerable<Vertex> Bfs(Graph graph, int startId)
+        {
+            if (!vertices.ContainsKey(startId)) yield break;
+            Queue<Vertex> _queue = new Queue<Vertex>();
+            HashSet<int> _seen = new HashSet<int>();
+
+            _queue.Enqueue(graph.Vertex(startId));
+            _seen.Add(graph.Vertex(startId).id);
+
+            while (_queue.Count > 0)
+            {
+                Vertex currentVertex = _queue.Dequeue();
+                yield return currentVertex;
+
+                foreach(Vertex neighbour in currentVertex.GetNeighboursList())
+                {
+                    if (_seen.Contains(neighbour.id)) continue;
+                    _seen.Add(neighbour.id);
+                    _queue.Enqueue(neighbour);
+                }
+            }
+        }
 
         public Graph()
         {
@@ -48,12 +71,13 @@ namespace MyApp
         }
         public Vertex First(int vertexId)
         {
-            if (vertices[vertexId].HasNeighbor(0)) return vertices[vertexId].NeighborAt(0);
-            else return -1;
+            if (!vertices.ContainsKey(vertexId)) return null;
+            if (vertices[vertexId].NeighborAt(0) != null) return vertices[vertexId].NeighborAt(0);
+            else return null;
         }
         public Vertex Next(int vertexId, int i)
         {
-            if (vertices[vertexId].HasNeighbor(i)) return vertices[vertexId].NeighborAt(i);
+            if (vertices[vertexId].NeighborAt(i) != null) return vertices[vertexId].NeighborAt(i);
             else return null;
         }
         public Vertex Vertex(int vertexId)
@@ -68,28 +92,27 @@ namespace MyApp
         {
             Vertex vertexFrom = vertices[fromId];
             Vertex vertexTo = vertices[toId];
-            if (!vertexFrom.HasNeighbor(toId)) vertexFrom.AddNeighbour(toId);
-            if (!vertexTo.HasNeighbor(fromId)) vertexTo.AddNeighbour(fromId);
+            if (!vertexFrom.HasNeighbor(toId)) vertexFrom.AddNeighbour(vertices[toId]);
+            if (!vertexTo.HasNeighbor(fromId)) vertexTo.AddNeighbour(vertices[fromId]);
         }
         public void Del_V(int id) 
-        {
-            vertices.Remove(id);
+        {            
             foreach (var vertex in vertices.Values)
             {
-                vertex.RemoveNeighbour(id);
-            }   
+                vertex.RemoveNeighbour(vertices[id]);
+            }
+            vertices.Remove(id);
         }
         public void Del_E(int fromId, int toId) 
         {
             Vertex vertexFrom = vertices[fromId];
-            Vertex  vertexTo = vertices[toId];
+            Vertex vertexTo = vertices[toId];
 
-            if (vertexFrom.HasNeighbor(toId)) vertexFrom.RemoveNeighbour(toId);
-            if (vertexTo.HasNeighbor(fromId)) vertexTo.RemoveNeighbour(fromId);
+            if (vertexFrom.HasNeighbor(toId)) vertexFrom.RemoveNeighbour(vertexTo);
+            if (vertexTo.HasNeighbor(fromId)) vertexTo.RemoveNeighbour(vertexFrom);
         }
         public void Edit_V(int id, int newId) 
-        {
-            
+        {            
             if (vertices.ContainsKey(id))
             {
                 Vertex vertex = vertices[id];
@@ -186,10 +209,18 @@ namespace MyApp
             graf.Add_E(5, 4);
             graf.Add_E(3, 4);
 
-            graf.Debug();
-            graf.CreateAdjencencyMatrix();
-            graf.PrintAdjacencyMatrix();
-            Console.WriteLine(graf.Next(1, 2));
+            foreach(Vertex v in graf.Bfs(graf, 1))
+            {
+                Console.WriteLine(v.id);
+            }
+
+            //graf.Debug();
+            //graf.CreateAdjencencyMatrix();
+            //graf.PrintAdjacencyMatrix();
+
+            //Console.WriteLine(graf.Next(1, 2).id);
+            //Console.WriteLine(graf.First(1).id);
+            //Console.WriteLine(graf.First(2).id);
         }
     }
 }

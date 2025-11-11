@@ -12,3 +12,4 @@ C:\Users\aadmin\source\repos\Grafs\Grafs\obj\Debug\net8.0\refint\Grafs.dll
 C:\Users\aadmin\source\repos\Grafs\Grafs\obj\Debug\net8.0\Grafs.pdb
 C:\Users\aadmin\source\repos\Grafs\Grafs\obj\Debug\net8.0\Grafs.genruntimeconfig.cache
 C:\Users\aadmin\source\repos\Grafs\Grafs\obj\Debug\net8.0\ref\Grafs.dll
+C:\Users\aadmin\source\repos\Grafs\Grafs\obj\Debug\net8.0\Grafs.sourcelink.json
