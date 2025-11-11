@@ -7,7 +7,8 @@ namespace MyApp
 {
     public class Vertex 
     {
-        private List<Vertex> neighbours;
+        private readonly List<Vertex> neighbours;
+        public IEnumerable<Vertex> Neighbors => neighbours;
         public int id;
         
         public Vertex(int id)
@@ -34,16 +35,12 @@ namespace MyApp
             Console.WriteLine();
         }
     }
-
-    class Graph
+    public class BfsIterator 
     {
-        private int countOfVertices;
-        private Dictionary<int, Vertex> vertices;
-        private List<List<int>> adjacencyMatrix;
-
-        public IEnumerable<Vertex> Bfs(Graph graph, int startId)
+        private BfsIterator() { }
+        public static IEnumerable<Vertex> Bfs(Graph graph, int startId)
         {
-            if (!vertices.ContainsKey(startId)) yield break;
+            if (graph.Vertex(startId) == null) yield break;
             Queue<Vertex> _queue = new Queue<Vertex>();
             HashSet<int> _seen = new HashSet<int>();
 
@@ -55,7 +52,7 @@ namespace MyApp
                 Vertex currentVertex = _queue.Dequeue();
                 yield return currentVertex;
 
-                foreach(Vertex neighbour in currentVertex.GetNeighboursList())
+                foreach (Vertex neighbour in currentVertex.Neighbors)
                 {
                     if (_seen.Contains(neighbour.id)) continue;
                     _seen.Add(neighbour.id);
@@ -63,6 +60,13 @@ namespace MyApp
                 }
             }
         }
+    }
+
+    public class Graph
+    {
+        private int countOfVertices;
+        private Dictionary<int, Vertex> vertices;
+        private List<List<int>> adjacencyMatrix;
 
         public Graph()
         {
@@ -82,6 +86,7 @@ namespace MyApp
         }
         public Vertex Vertex(int vertexId)
         {
+            if (!vertices.ContainsKey(vertexId)) return null;
             return vertices[vertexId];
         }
         public void Add_V(int id) 
@@ -201,15 +206,14 @@ namespace MyApp
             graf.Add_V(2);
             graf.Add_V(3);
             graf.Add_V(4);
-            graf.Add_V(5);
 
             graf.Add_E(1, 2);
             graf.Add_E(1, 3);
-            graf.Add_E(5, 1);
-            graf.Add_E(5, 4);
+            graf.Add_E(3, 2);
+            graf.Add_E(2, 4);
             graf.Add_E(3, 4);
 
-            foreach(Vertex v in graf.Bfs(graf, 1))
+            foreach(Vertex v in BfsIterator.Bfs(graf, 1))
             {
                 Console.WriteLine(v.id);
             }
